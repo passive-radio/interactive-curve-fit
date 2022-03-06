@@ -1,5 +1,5 @@
 from core.interactive import drag_guess
-from utils.draw_test import draw_test
+from utils.draw_test_data import draw_test
 
 if __name__ == "__main__":
     

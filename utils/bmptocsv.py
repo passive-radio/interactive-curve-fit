@@ -4,7 +4,7 @@ import os
 
 from PIL import Image
 
-def bmpToCSV(file):
+def bmp_to_csv(file):
     lum_list = []
     pixel_lum = []
     image = Image.open(file)
@@ -34,4 +34,4 @@ if __name__ == "__main__":
     endpoint = "sample02.bmp"
     
     file_path = base_path +"/"+ endpoint
-    bmpToCSV(file_path)
+    bmp_to_csv(file_path)
