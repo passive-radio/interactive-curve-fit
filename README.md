@@ -1,8 +1,8 @@
-# <b>peak fitter auto</b>
-This project focuses on finding and fitting peaks.
-with the help of the GUI fitting method, you can find and fit optional number of peaks.
+# <b>Interactive Scipy Curve_fit</b>
+A Python project enables you to fit peaks interactively on GUI.
+You can visualize your spectrum and fit the optional number of the peaks on GUI using Scipy.optimize.curve_fit method.
 
-## <b>spectrum data format must be like the table below</b>
+## <b>Spectrum data format must be like the table below</b>
 
 | x | y |
 |---|---|
@@ -16,13 +16,17 @@ with the help of the GUI fitting method, you can find and fit optional number of
 
 ## <b>Features</b>
 
-1. Peak fitting on GUI window
+1. Fitting spectrum in GUI window
 
-    Now you can obtain x,y of each peak on the spectrum by using [interactive.py](interactive.py)
+    You can obtain the information of each peaks in the spectrum by using [interactive.py](core/interactive.py)
+    ### Output information includes:
+    - peak position (x, y)
+    - baseline height of the spectrum
+    - bandwidth of each peaks with its CI (confidential interval)
 
-    ### Available method
-    - click (click the top and both edge of each peaks)
-    - drag (wrap up the peak area by mouse dragging)
+    ### Guess methods available:
+    - click (click the top and the both edge of each peaks)
+    - drag (wrap up the peak area by dragging mouse)
 
     ### Click example
     ![interactive peak guessing](img/interactive_step1.png)
@@ -36,19 +40,18 @@ with the help of the GUI fitting method, you can find and fit optional number of
 
     Notice: file format of the images must be bmp(.bmp, .jpg, .png, .jpeg). Vector format isn't supported.
 
-## <b>Available approximation curve types</b>
+## <b>Supported approximation curve functions</b>
 
 - gaussian function
 - polynomial function
 
-## <b>Supported supectrum files format </b>
+## <b>Supported supectrum files format</b>
 * ascii file(.asc .csv .txt etc..)
 * bmp image(.bmp .jpg .png .jpeg etc..)
 
     excel sheet files, table of html are planed to be suported in the near future.
 
-## <b>Future features</b>
+## <b>Features that are planned to be supported!</b>
 
-- get the peak positions with its errors 
 - baseline correlation
-- other fitting function like binomical distribution func
+- other fitting functions (e.g. binomical distribution function)

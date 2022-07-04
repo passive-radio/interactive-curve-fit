@@ -8,79 +8,43 @@ import matplotlib.cm as cm
 
 
 class find_peaks(object):
-    def __init__(self, data, peaks=None) -> None:
-        if type(peaks) == int:
-            self.peaks = peaks
-        else:
-            self.peaks = None
-        self.data = data
-        
-    @property
-    def returnPeakNumber(self):
-        return int(self.peaks)
+    """
+    ## init params
+    - data: spectrum data
+    - ci: confidential interval (unit: sigma, default: 2*sigma)
+    - num_peaks: number of the peaks you want to fit (default: None)
+    """
     
-    def plynomi_func_fit(self, *params, deg, mode="g"):
+    def __init__(self, data, ci=2, num_peaks=None) -> None:
+        if type(num_peaks) == int:
+            self.num_peaks = num_peaks
+        else:
+            self.num_peaks = None
+        self.data = data
+        self.ci = ci
+    
+    def polynomial_func_fit(self, *params, deg, mode="g"):
+        
         x = self.data.x
+        params_raw = params
+        params_guess = params[0:-1]
         
-        if mode=="g":
-            params_raw = params
-            params_guess = params[0:-1]
-            #params_guess = [pos, amp, pos, amp,..., bg]
-            
-            num_func = int(len(params_guess)/2)
-            
-            params_new = []
-            for i in range(num_func):
-                params_temp = []
-                for j in range(deg):
-                    #[pos, amp]
-                    params_new.append(params_guess[2*i])
-                    params_new.append(params_guess[2*i+1])
-            params_new.append(params_raw[-1])
+        num_func = int(len(params_guess)/2)
+        self.num_peaks = num_func
+        params_new = []
+        for i in range(num_func):
+            for _ in range(deg):
+                params_new.append(params_guess[2*i])
+                params_new.append(params_guess[2*i+1])
+        params_new.append(params_raw[-1])
 
-            def plynomi_func(x=x, *params_guess):
-                # params_guess = [[pos, amp1, pos, amp2],[pos, amp1, pos, amp2],...]
-                if type(params_guess)==list:
-                    params = params_guess
-                elif type(params_guess)==tuple:
-                    params = list(params_guess)
-                # return params
-                num_func = int((len(params)-1)/(deg*2))
-                y_list = []
-                for i in range(num_func):
-                    y = np.zeros_like(x)
-                    for j in range(i, deg):
-                        # params[2+deg*i + 2*j+1]       amp
-                        # params[2+deg*i + 2*j]         pos
-                        # j+1                           deg
-                        y = y + np.array(params[2*deg*i + 2*j+1] * (x-params[2*deg*i + 2*j]) ** (j+1), dtype="float64")
-                    y_list.append(y)
-                
-                # for i in range(num_func):
-                #     y = np.zeros_like(x)
-                #     for j in range(len(params[i])):
-                #         print(params[i][j][1])
-                #         y = y + np.array(params[i][j][1] * (x-params[i][j][0]) ** (j+1), dtype="float64")
-                #     y_list.append(y)
-                    
-                y_sum = np.zeros_like(x)
-                for i in y_list:
-                    y_sum = y_sum + i
-                    
-                #最後にバックグラウンドを追加。
-                y_sum = y_sum + params[-1]
-                return y_sum
-            
-            # return plynomi_func(x, params_new)
-            popt, pcov = curve_fit(plynomi_func, x, self.data.y, p0=params_new)
-            self.popt = popt
-            self.pcov = pcov
-            return popt, pcov
-        
-        elif mode=="f":
-            params = params
+        def plynomi_func(x=x, *params_guess):
             # params_guess = [[pos, amp1, pos, amp2],[pos, amp1, pos, amp2],...]
-            # return params
+            if type(params_guess)==list:
+                params = params_guess
+            elif type(params_guess)==tuple:
+                params = list(params_guess)
+            
             num_func = int((len(params)-1)/(deg*2))
             y_list = []
             for i in range(num_func):
@@ -91,54 +55,53 @@ class find_peaks(object):
                     # j+1                           deg
                     y = y + np.array(params[2*deg*i + 2*j+1] * (x-params[2*deg*i + 2*j]) ** (j+1), dtype="float64")
                 y_list.append(y)
-            
+
             y_sum = np.zeros_like(x)
             for i in y_list:
                 y_sum = y_sum + i
                 
-            #最後にバックグラウンドを追加。
+            # add background
             y_sum = y_sum + params[-1]
             return y_sum
         
+        # return plynomi_func(x, params_new)
+        popt, pcov = curve_fit(plynomi_func, x, self.data.y, p0=params_new)
+        self.popt = popt
+        self.pcov = pcov
+        return popt, pcov
+    
+    def polynomial_func_fit_mode_f(self, *params, deg, mode='f'):
+        params = params
+        x = self.data.x
+
+        num_func = int((len(params)-1)/(deg*2))
+        y_list = []
+        for i in range(num_func):
+            y = np.zeros_like(x)
+            for j in range(i, deg):
+                # params[2+deg*i + 2*j+1]       amp
+                # params[2+deg*i + 2*j]         pos
+                # j+1                           deg
+                y = y + np.array(params[2*deg*i + 2*j+1] * (x-params[2*deg*i + 2*j]) ** (j+1), dtype="float64")
+            y_list.append(y)
+        
+        y_sum = np.zeros_like(x)
+        for i in y_list:
+            y_sum = y_sum + i
+            
+        # add backfround
+        y_sum = y_sum + params[-1]
+        return y_sum
+    
     def exp_func_fit(self, *params, mode="g"):
         x = self.data.x
         
-        if mode=="g":
-            def exp_func(x=x, *params_guess):
-                params = params_guess
-                #paramsの長さでフィッティングする関数の数を判別。
-                num_func = int(len(params)/3)
-
-                #ガウス関数にそれぞれのパラメータを挿入してy_listに追加。
-                y_list = []
-                for i in range(num_func):
-                    y = np.zeros_like(x)
-                    param_range = list(range(3*i,3*(i+1),1))
-                    ctr = params[int(param_range[0])]
-                    amp = params[int(param_range[1])]
-                    wid = params[int(param_range[2])]
-                    y = y + amp * np.exp( -((x - ctr)/wid)**2)
-                    y_list.append(y)
-
-                #y_listに入っているすべてのガウス関数を重ね合わせる。
-                y_sum = np.zeros_like(x)
-                for i in y_list:
-                    y_sum = y_sum + i
-
-                #最後にバックグラウンドを追加。
-                y_sum = y_sum + params[-1]
-
-                return y_sum
-            
-            popt, pcov = curve_fit(exp_func, x, self.data.y, p0=params)
-            self.popt = popt
-            self.pcov = pcov
-            return popt, pcov
-        
-        elif mode=="f":
+        def exp_func(x=x, *params_guess):
+            params = params_guess
             #paramsの長さでフィッティングする関数の数を判別。
             num_func = int(len(params)/3)
-
+            self.num_peaks = num_func
+            
             #ガウス関数にそれぞれのパラメータを挿入してy_listに追加。
             y_list = []
             for i in range(num_func):
@@ -159,7 +122,36 @@ class find_peaks(object):
             y_sum = y_sum + params[-1]
 
             return y_sum
-            
+        
+        popt, pcov = curve_fit(exp_func, x, self.data.y, p0=params)
+        self.popt = popt
+        self.pcov = pcov
+        return popt, pcov
+        
+    def exp_func_fit_mode_f(self, *params, mode='f'):
+        x = self.data.x
+        #paramsの長さでフィッティングする関数の数を判別。
+        num_func = int(len(params)/3)
+        #ガウス関数にそれぞれのパラメータを挿入してy_listに追加。
+        y_list = []
+        for i in range(num_func):
+            y = np.zeros_like(x)
+            param_range = list(range(3*i,3*(i+1),1))
+            ctr = params[int(param_range[0])]
+            amp = params[int(param_range[1])]
+            wid = params[int(param_range[2])]
+            y = y + amp * np.exp( -((x - ctr)/wid)**2)
+            y_list.append(y)
+
+        #y_listに入っているすべてのガウス関数を重ね合わせる。
+        y_sum = np.zeros_like(x)
+        for i in y_list:
+            y_sum = y_sum + i
+
+        #最後にバックグラウンドを追加。
+        y_sum = y_sum + params[-1]
+        return y_sum
+        
     def exp_fit_plot(self,*params):
         x = self.data.x
         num_func = int(len(params)/3)
@@ -183,7 +175,7 @@ class find_peaks(object):
             y_list = []
             fit = self.exp_func_fit(*params, mode="f")
             plt.scatter(x, y, s=20)
-            plt.plot(x, fit , ls='-', c='black', lw=1)
+            # plt.plot(x, fit , ls='-', c='black', lw=1)
             
             for i in range(num_func):
                 y = np.zeros_like(x)
@@ -234,6 +226,10 @@ class find_peaks(object):
             #     plt.fill_between(x, i, baseline, facecolor=cm.rainbow(n/len(y_list)), alpha=0.6)
     
     @property
+    def get_num_peaks(self):
+        return int(self.num_peaks)
+    
+    @property
     def peakxs(self):
         popt = self.popt
         peakxs = [popt[i] for i in range(len(popt)) if i % 3 ==0]
@@ -246,13 +242,18 @@ class find_peaks(object):
         return peakys
     
     @property
-    def peakwidth(self):
+    def peak_width(self):
         popt = self.popt
         peakwidth = [popt[i] for i in range(len(popt)) if i % 3 ==2]
         return peakwidth
-        
-    def peak_width(self, ci):
+    
+    @property
+    def background(self):
+        return self.popt[-1]
+    
+    def bandwidth_list(self, ci):
+        self.ci = ci
         popt = self.popt
-        wid_list = [popt[i] for i in range(len(popt)) if i % 3 ==2]
-        wid_list = [wid_list[i]/(2**0.5) * 2*ci for i in range(len(wid_list))]
-        return wid_list
+        width_list = [popt[i] for i in range(len(popt)) if i % 3 ==2]
+        width_list = [width_list[i]/(2**0.5) * 2*ci for i in range(len(width_list))]
+        return width_list

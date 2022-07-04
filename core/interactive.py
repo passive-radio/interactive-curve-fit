@@ -116,19 +116,20 @@ def click_guess(data, background, ci=2):
         guess_total.extend(i)
     guess_total.append(background)
     
+    # run scipy.optimize.curve_fit
     popt, pcov = findpeaks.exp_func_fit(*guess_total, mode="g")
-    #curve_fitが動いている
+    opt_background = popt[-1]
+    # visualize optimized functions with the original spectrum
     findpeaks.fit_plot(*popt, func="exp")
     
     peaks = []
-    
     for i in range(len(x_peaks)):
         
-        peaks.append([x_peaks[i], y_peaks[i], bands[i], popt[-1]])
+        peaks.append([findpeaks.peakxs[i], findpeaks.peakys[i], findpeaks.bandwidth_list_test[i], opt_background])
         
-        print(f"Fitting result #{i+1}")
-        print("-"*30)
-        print("x y bandwidth (your guess)")
+        print(f"Fitting result: Peak No.{i+1}")
+        print("-"*10, "your guess", "-"*10)
+        print("x y bandwidth")
         print(x_peaks[i], y_peaks[i], bands[i], background)
         print("x y bandwidth background (Fitting result)")
         print(findpeaks.peakxs[i], findpeaks.peakys[i], findpeaks.peak_width(ci)[i], popt[-1])
@@ -297,9 +298,6 @@ def drag_guess(data, background, ci=2):
     plt.scatter(x_list, y_list, s=2)
     plt.show()
     
-    #data = reset_range(data_origin, 1600)
-    findpeaks = find_peaks(data)
-    
     #初期値のリストを作成
     #[amp,ctr,wid]
     guess = []
@@ -310,39 +308,79 @@ def drag_guess(data, background, ci=2):
             print(e)
             pass
 
-    #バックグラウンドの初期値
-
     #初期値リストの結合
     guess_total = []
     for i in guess:
         guess_total.extend(i)
     guess_total.append(background)
     
+    findpeaks = find_peaks(data, ci=ci)
+    
     popt, pcov = findpeaks.exp_func_fit(*guess_total, mode="g")
+    opt_background = popt[-1]
     findpeaks.fit_plot(*popt, func="exp")
     
     peaks = []
     
     for i in range(len(x_peaks)):
         
-        peaks.append([x_peaks[i], y_peaks[i], bands[i], popt[-1]])
+        peaks.append([findpeaks.peakxs[i], findpeaks.peakys[i], findpeaks.bandwidth_list_test[i], opt_background])
         
-        print(f"Fitting result #{i+1}")
-        print("-"*30)
-        print("x y bandwidth (your guess)")
+        print(f"Fitting result: Peak No.{i+1}")
+        print("-"*10, "your initial guess", "-"*10)
+        print("x y bandwidth background")
         print(x_peaks[i], y_peaks[i], bands[i], background)
-        print("x y bandwidth background (Fitting result)")
-        print(findpeaks.peakxs[i], findpeaks.peakys[i], findpeaks.peak_width(2)[i], popt[-1])
+        print("-"*10, "optimized results", "-"*10)
+        print(f"x y bandwidth(ci: {ci}sigma) background")
+        print(findpeaks.peakxs[i], findpeaks.peakys[i], findpeaks.bandwidth_list_test[i], popt[-1])
         print("-"*30)
     
     # write peaks onto csv file
     
     plt.show()
     
-    peaks = pd.DataFrame(peaks, columns=["x", "y", "width", "background"])
+    peaks = pd.DataFrame(peaks, columns=["x", "y", f"bandwidth(ci: {ci}sigma)", "background"])
     return peaks
 
+"""
+find_peaks class が 今は独立して実装されている fit_dataとか display_results_terminal を持っていたほうがいい気がする
+なぜなら find_peaks class 自体が init guess by user と fitting resutls を持っているから
+"""
+
+def fit_data(data, guess):
+    optimizer = find_peaks(data)
+    popt, pcov = optimizer.exp_func_fit(*guess)
+    opt_background = popt[-1]
     
+    peaks = []
+    for i in range(optimizer.get_num_peaks):
+        peaks.append([optimizer.peakxs[i], optimizer.peakys[i], optimizer.bandwidth_list_test[i], opt_background])
+
+    return peaks
+
+def display_results_terminal(results: find_peaks, ci=2, init_guess: list = None):
+    
+    for i in range(results.get_num_peaks):
+        
+        
+        
+        print(f"Fitting result: Peak No.{i+1}")
+        print("-"*10, "your initial guess", "-"*10)
+        print("x y bandwidth background")
+        print(x_peaks[i], y_peaks[i], bands[i], background)
+        print("-"*10, "optimized results", "-"*10)
+        print(f"x y bandwidth(ci: {ci}sigma) background")
+        print(findpeaks.peakxs[i], findpeaks.peakys[i], findpeaks.bandwidth_list_test[i], popt[-1])
+        print("-"*30)
+    
+    # write peaks onto csv file
+    
+    plt.show()
+    
+    peaks = pd.DataFrame(peaks, columns=["x", "y", f"bandwidth(ci: {ci}sigma)", "background"])
+    return peaks
+    
+
 if __name__ == "__main__":
     
     base_url = "sample_data/"
