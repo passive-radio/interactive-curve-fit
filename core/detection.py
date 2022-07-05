@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
 
-class find_peaks(object):
+class Fitter(object):
     """
     ## init params
     - data: spectrum data
@@ -15,13 +15,60 @@ class find_peaks(object):
     - num_peaks: number of the peaks you want to fit (default: None)
     """
     
-    def __init__(self, data, ci=2, num_peaks=None) -> None:
+    def __init__(self, data, guess, ci=2, num_peaks=None) -> None:
         if type(num_peaks) == int:
             self.num_peaks = num_peaks
         else:
             self.num_peaks = None
         self.data = data
+        self.guess = guess
         self.ci = ci
+        
+    def run(self, method='gauss'):
+        if method == 'gauss':
+            popt, pcov = self.gauss_func_fit()
+        elif method == 'polynomial':
+            popt, pcov = self.polynomial_func_fit()
+        return popt, pcov
+    
+    def gauss_func_fit(self):
+        
+        def exp_func(x=self.data.x, *params_guess):
+            params = params_guess
+            #paramsの長さでフィッティングする関数の数を判別。
+            num_func = int(len(params)/3)
+            self.num_peaks = num_func
+            
+            #ガウス関数にそれぞれのパラメータを挿入してy_listに追加。
+            y_list = []
+            for i in range(num_func):
+                y = np.zeros_like(x)
+                param_range = list(range(3*i,3*(i+1),1))
+                ctr = params[int(param_range[0])]
+                amp = params[int(param_range[1])]
+                wid = params[int(param_range[2])]
+                y = y + amp * np.exp( -((x - ctr)/wid)**2)
+                y_list.append(y)
+
+            #y_listに入っているすべてのガウス関数を重ね合わせる。
+            y_sum = np.zeros_like(x)
+            for i in y_list:
+                y_sum = y_sum + i
+
+            #最後にバックグラウンドを追加。
+            y_sum = y_sum + params[-1]
+
+            return y_sum
+        
+        guess_list = []
+        for content in self.guess[:-1]:
+            guess_list.extend(content)
+        guess_list.append(self.guess[-1])
+        
+        popt, pcov = curve_fit(exp_func, self.data.x, self.data.y, p0=guess_list)
+        self.popt = popt
+        self.pcov = pcov
+        return popt, pcov
     
     def polynomial_func_fit(self, *params, deg, mode="g"):
         
@@ -93,10 +140,13 @@ class find_peaks(object):
         y_sum = y_sum + params[-1]
         return y_sum
     
+    """
+    exp_func_fit is the old fitting method and will be deprecated.
+    Use gauss_func_fit instead.
+    """
     def exp_func_fit(self, *params, mode="g"):
-        x = self.data.x
         
-        def exp_func(x=x, *params_guess):
+        def exp_func(x=self.data.x, *params_guess):
             params = params_guess
             #paramsの長さでフィッティングする関数の数を判別。
             num_func = int(len(params)/3)
@@ -123,7 +173,7 @@ class find_peaks(object):
 
             return y_sum
         
-        popt, pcov = curve_fit(exp_func, x, self.data.y, p0=params)
+        popt, pcov = curve_fit(exp_func, self.data.x, self.data.y, p0=params)
         self.popt = popt
         self.pcov = pcov
         return popt, pcov
@@ -224,6 +274,28 @@ class find_peaks(object):
             # plt.plot(x, baseline, ls='-', c='gray', alpha=0.6, lw=1)
             # for n,i in enumerate(y_list):
             #     plt.fill_between(x, i, baseline, facecolor=cm.rainbow(n/len(y_list)), alpha=0.6)
+    
+    def display_results_terminal(self, ci=2):
+        
+        peaks = []
+        
+        for i in range(self.get_num_peaks):
+            
+            peaks.append([self.peakxs[i], self.peakys[i], self.bandwidth_list(ci)[i], self.background])
+            
+            print(f"Fitting result: Peak No.{i+1}")
+            print("-"*10, "your initial guess", "-"*10)
+            print("x y bandwidth background")
+            print(self.guess[i][0], self.guess[i][1], self.guess[i][2], self.guess[-1])
+            print("-"*10, "optimized results", "-"*10)
+            print(f"x y bandwidth(ci: {ci}sigma) background")
+            print(self.peakxs[i], self.peakys[i], self.bandwidth_list(ci)[i], self.background)
+            print("-"*30)
+            
+        
+        peaks = pd.DataFrame(peaks, columns=["x", "y", f"bandwidth(ci: {ci}sigma)", "background"])
+        return peaks
+
     
     @property
     def get_num_peaks(self):
