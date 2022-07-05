@@ -18,5 +18,5 @@ def main(data):
 
 if __name__ == "__main__":
     
-    data = read_data('sample_data/sample04.csv', 0, ',')
+    data = read_data('sample_data/sample.csv', 0, ',')
     main(data)
