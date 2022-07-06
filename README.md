@@ -53,3 +53,4 @@ Try [how_to_use.py](how_to_use.py) with your spectrum data!
 
 - baseline correlation
 - other fitting functions (e.g. binomical distribution function)
+- automated guessor method using wavelet transform and CNN
