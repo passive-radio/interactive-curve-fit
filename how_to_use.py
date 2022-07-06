@@ -6,7 +6,7 @@ from core.detection import Fitter
 
 def main():
     
-    data = bmp_to_csv('sample_data/sample.bmp')
+    bmp_to_csv('sample_data/sample.bmp')
     data = read_data('sample_data/sample.csv', 0, ',')
     
     guessor = Guessor(data, background=0, method="drag")
@@ -15,7 +15,7 @@ def main():
     optimizer = Fitter(data, guess)
     optimizer.run()
     optimizer.save_data(save_path='result/spectrum0.csv')
-    peaks = optimizer.display_results_terminal(ci=2)
+    optimizer.display_results_terminal(ci=2)
 
 if __name__ == "__main__":
     

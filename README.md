@@ -2,6 +2,10 @@
 A Python project enables you to fit peaks interactively on GUI.
 You can visualize your spectrum and fit the optional number of the peaks on GUI using Scipy.optimize.curve_fit method.
 
+## <b>How to use?</b>
+
+Try [how_to_use.py](how_to_use.py) with your spectrum data!
+
 ## <b>Spectrum data format must be like the table below</b>
 
 | x | y |
@@ -16,38 +20,32 @@ You can visualize your spectrum and fit the optional number of the peaks on GUI 
 
 ## <b>Features</b>
 
-1. Fitting spectrum in GUI window
+1. Making the initial guess of each peak position on GUI
 
-    You can obtain the information of each peaks in the spectrum by using [interactive.py](core/interactive.py)
-    ### Output information includes:
-    - peak position (x, y)
+    ### Initial Guess method
+    - mouse-dragging (wrap up peak area by mouse-dragging)
+    - click (click the top and the both edges of each peaks)
+
+    ### Screenshot
+    ![Guessing peak pos interactively](img/mouse-dragging-step0.png)
+    ![Guessing another peak pos](img/mouse-dragging-step2.png)
+    ![Fitting results (by Fitter class)](img/peak_found.png)
+
+1. Fitting peaks data with guessor results as the init fitting functions
+    
+    ### Supported fitting functions
+    - gaussian function
+    - polynomial function
+
+    ### Output information includes
+    - position (x, y) of each peaks
     - baseline height of the spectrum
     - bandwidth of each peaks with its CI (confidential interval)
 
-    ### Guess methods available:
-    - click (click the top and the both edge of each peaks)
-    - drag (wrap up the peak area by dragging mouse)
+## <b>Supported supectrum file format</b>
 
-    ### Click example
-    ![interactive peak guessing](img/interactive_step1.png)
-    ![selecting another peak](img/interactive_another_peak.png)
-    ![results](img/peak_found.png)
-
-
-2. Converting bmp image files to csv files
-
-    You can directly find and fit peaks from the image(which contains spectrum data) by [interacive.py](interactive.py) without additional hassle of converting bmp images into csv files.
-
-    Notice: file format of the images must be bmp(.bmp, .jpg, .png, .jpeg). Vector format isn't supported.
-
-## <b>Supported approximation curve functions</b>
-
-- gaussian function
-- polynomial function
-
-## <b>Supported supectrum files format</b>
-* ascii file(.asc .csv .txt etc..)
-* bmp image(.bmp .jpg .png .jpeg etc..)
+- ascii file(.asc .csv .txt etc..)
+- bmp image(.bmp .jpg .png .jpeg etc..)
 
     excel sheet files, table of html are planed to be suported in the near future.
 
