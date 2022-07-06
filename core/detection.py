@@ -24,12 +24,24 @@ class Fitter(object):
         self.guess = guess
         self.ci = ci
         
-    def run(self, method='gauss'):
+    def run(self, method='gauss', ci:int=2):
         if method == 'gauss':
             popt, pcov = self.gauss_func_fit()
         elif method == 'polynomial':
             popt, pcov = self.polynomial_func_fit()
-        return popt, pcov
+            
+        peakx = self.peakxs
+        peaky = self.peakys
+        bandwidth = self.bandwidth_list(ci)
+        bg = self.background
+        
+        peaks = []
+        for i in range(self.get_num_peaks):
+            peaks.append([peakx[i], peaky[i], bandwidth[i], bg])
+        
+        peaks = pd.DataFrame(peaks, columns=["x", "y", f"bandwidth(ci: {ci}sigma)", "background"])
+        self.peaks = peaks
+        return True
     
     def gauss_func_fit(self):
         
@@ -291,9 +303,9 @@ class Fitter(object):
             print(f"x y bandwidth(ci: {ci}sigma) background")
             print(self.peakxs[i], self.peakys[i], self.bandwidth_list(ci)[i], self.background)
             print("-"*30)
-            
         
         peaks = pd.DataFrame(peaks, columns=["x", "y", f"bandwidth(ci: {ci}sigma)", "background"])
+        self.peaks = peaks
         return peaks
 
     
@@ -323,9 +335,15 @@ class Fitter(object):
     def background(self):
         return self.popt[-1]
     
+    def out_result(self, ci:int=2):
+        return self.peaks
+    
     def bandwidth_list(self, ci):
         self.ci = ci
         popt = self.popt
         width_list = [popt[i] for i in range(len(popt)) if i % 3 ==2]
         width_list = [width_list[i]/(2**0.5) * 2*ci for i in range(len(width_list))]
         return width_list
+    
+    def save_data(self, dir_path:str=None, save_path:str=None):
+        self.peaks.to_csv(save_path, sep=',')

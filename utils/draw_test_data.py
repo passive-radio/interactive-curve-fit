@@ -65,3 +65,8 @@ def draw_test(file_path, mode):
     if mode=="rp":
         return file_path
 
+if __name__ == "__main__":
+    
+    output_dir = 'output/'
+    # data = draw(output_dir + "drawed.csv", mode="rd")
+    data = draw_test(output_dir + "drawed.csv", mode="rd")
