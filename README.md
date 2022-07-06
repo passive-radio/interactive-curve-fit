@@ -30,6 +30,7 @@ Try [how_to_use.py](how_to_use.py) with your spectrum data!
     ![Guessing peak pos interactively](img/mouse-dragging-step0.png)
     ![Guessing another peak pos](img/mouse-dragging-step2.png)
     ![Fitting results (by Fitter class)](img/peak_found.png)
+    ![Peak information on terminal](img/peak_terminal.png)
 
 1. Fitting peaks data with guessor results as the init fitting functions
     
