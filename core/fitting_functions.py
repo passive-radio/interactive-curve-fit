@@ -55,25 +55,3 @@ class Polynomial:
 
         y_total += params[-1]
         return y_total
-
-def polynomial_func(x, *params_guess, deg):
-    # params_guess = [[pos, amp1, pos, amp2],[pos, amp1, pos, amp2],...]
-    if type(params_guess)==list:
-        params = params_guess
-    elif type(params_guess)==tuple:
-        params = list(params_guess)
-    
-    y_total = np.zeros_like(x)
-    num_func = int((len(params_guess)-1)/(deg*2))
-    
-    for i in range(num_func):
-        y = np.zeros_like(x)
-        for j in range(i, deg):
-            # params[2+deg*i + 2*j+1]       amp
-            # params[2+deg*i + 2*j]         pos
-            # j+1                           deg
-            y += np.array(params[2*deg*i + 2*j+1] * (x-params[2*deg*i + 2*j]) ** (j+1), dtype="float64")
-        y_total += y
-
-    y_total += params[-1]
-    return y_total
