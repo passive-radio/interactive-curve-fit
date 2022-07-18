@@ -37,24 +37,27 @@ class WaveletTransform:
         
         return freqs
     
-    def transform(self, amp, width, deltab):
+    def transform(self, amp, width, deltab, sigma:float = 1.0, k:float = 1.0):
+        
+        self.mother_amp = amp
+        self.mother_width = width
+        self.mother_deltab = deltab
+        self.mother_sigma = sigma
+        self.mother_k = k
+        
         import matplotlib.pyplot as plt
         
         Ts = 1/self.fs
         freqs = self.get_freqs()
+        
         length = len(freqs)
         wn = np.zeros([len(freqs), len(self.signal)])
         
+        signal = self.signal['y'] - 22
+        
         for i, freq in enumerate(freqs):
             
-            mother_func = self.mother_func(freq, amp=amp, width=width, deltab=deltab)
-            conv = np.abs(np.convolve(self.signal['y'], self.mother_func(freq, amp=amp, width=width, deltab=deltab), mode='same'))
-            
-            # fig, ax = plt.subplots()
-            # ax.plot(self.signal['y'])
-            # ax.plot(mother_func)
-            # ax.plot(conv)
-            # plt.show()
+            conv = np.abs(np.convolve(signal, self.mother_func(freq, amp=amp, width=width, deltab=deltab, sigma=sigma, k=k), mode='same'))
             
             wn[length-1-i, :] = conv
             wn[length-1-i, :] = (2 * wn[length-1-i, :]/self.fs)**2
@@ -63,13 +66,15 @@ class WaveletTransform:
         
         return self.sequence
     
-    def mother_func(self, freq:float=0.01, amp:float = 1.0, width:float = 1, deltab:float = 1):
+    def mother_func(self, freq:float=0.01, amp:float = 1.0, width:float = 1, deltab:float = 1, sigma:float = 1, k:float = 1):
         # freqs = self.get_freqs()
         # width = 0.4
         scale_space = np.arange(-1* width/2 + deltab/2, width/2 + deltab/2, deltab)
         # wab = np.zeros([len(freqs), len(scale_space)])
         # wab = np.power(amp, -1/2) * np.exp(-np.power(scale_space, 2)/np.power(amp/freqs, 2))
-        wab = np.power(amp, -1/2) * np.exp(-np.power(scale_space, 2)/np.power(amp/freq, 2))
+        cor = amp * sigma * np.power(np.pi, -1/4)
+        wab = cor * np.exp(-1/2 * np.power(scale_space, 2) / np.power(amp/freq, 2)) * (np.cos(sigma * scale_space) - k*sigma)
+        # wab = np.power(amp, -1/2) * np.exp(-np.power(scale_space, 2) * np.sin() /np.power(amp/freq, 2))
         # for i, freq in enumerate(freqs):
         #     wab[i, :] = np.power(amp, -1/2) * np.exp(-np.power(scale_space, 2)/np.power(amp/freq, 2))
         return wab
@@ -82,9 +87,24 @@ class WaveletTransform:
         height_multi = height / np.max(self.sequence)
         sequence = height_multi * self.sequence
         
-        plt.plot(self.signal['y'])
+        signal = self.signal['y'] - 22
+        
+        plt.plot(signal)
         plt.plot(sequence)
         plt.legend(['original', 'convoluted signal'])
         plt.show()
         
         return sequence
+    
+    def plot_mother_func(self):
+        
+        import matplotlib.pyplot as plt
+        
+        freq = self.get_freqs()[0]
+        
+        # mother_func = self.mother_func(10, 200, 100, 1, 0.5, 0.01)
+        mother_func = self.mother_func(freq, self.mother_amp, self.mother_width, self.mother_deltab, self.mother_sigma, self.mother_k)
+
+        plt.plot(mother_func)
+        plt.legend([f"mother function ({str(freq)} Hz)"])
+        plt.show()

@@ -31,7 +31,7 @@ def main2():
     freqs = guessor.get_freqs()
     print(len(freqs))
     
-    # mother_func = guessor.mother_func(1, 1, 1000, 1)
+    # mother_func = guessor.mother_func(0.01, 1, 1000, 1, 0.1, 1)
     
     # print(mother_func)
     # import matplotlib.pyplot as plt
@@ -39,7 +39,8 @@ def main2():
     # ax.plot(mother_func)
     # plt.show()
     
-    init_guess = guessor.transform(amp=1, width=30, deltab=1)
+    init_guess = guessor.transform(amp=100, width=10, deltab=1, sigma=0.005, k = 0.01)
+    # guessor.plot_mother_func()
     guessor.plot()
 
 if __name__ == "__main__":
