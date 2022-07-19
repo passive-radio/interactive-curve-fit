@@ -39,7 +39,7 @@ def main2():
     # ax.plot(mother_func)
     # plt.show()
     
-    init_guess = guessor.transform(amp=100, width=10, deltab=1, sigma=0.005, k = 0.01)
+    init_guess = guessor.transform(amp=100, width=50, deltab=1, sigma=1, k = 0.01)
     # guessor.plot_mother_func()
     guessor.plot()
 
