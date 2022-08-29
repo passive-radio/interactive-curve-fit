@@ -5,7 +5,7 @@ import numpy as np
 
 from core.preprocessing import read_data, reset_range
 
-def draw_test(file_path, mode):
+def draw_test(file_path, mode=None):
     
     x_list = []
     y_list = []
@@ -44,12 +44,6 @@ def draw_test(file_path, mode):
     for i in range(len(x_list)):
         list.append([x_list[i], y_list[i]])
         
-        
-    # plt.plot(x_list, y_list)
-
-    #plt.show()
-
-    print(list)
     list = np.array(list)
     
     try:
@@ -64,6 +58,8 @@ def draw_test(file_path, mode):
     
     if mode=="rp":
         return file_path
+    else:
+        return True
 
 if __name__ == "__main__":
     
