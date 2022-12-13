@@ -1,4 +1,4 @@
-from interactive_curve_fit.core import *
-from interactive_curve_fit.core import *
+from core import *
+from utils import *
 from ._version import __version__
 __version__ = __version__
