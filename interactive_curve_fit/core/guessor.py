@@ -1,15 +1,8 @@
-import time
-import csv
-
-import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt 
 import matplotlib.patches as patches
 from matplotlib.artist import Artist
 
-
-# from core.detection import find_peaks
-from core.preprocessing import read_data, reset_range
+from .preprocessor import read_data, reset_range
 
 X_SCALE = 200
 Y_SCALE = 30
@@ -24,7 +17,7 @@ draw_count = 0
 rs = []
 is_released = False
 
-class Guessor(object):
+class Guessor():
     def __init__(self, data, method, background=0) -> None:
         self.data = data
         self.method = method
@@ -33,13 +26,13 @@ class Guessor(object):
     def guess(self):
         if self.method == "drag":
             # run drag guess and return guess
-            peaks_guessed = self.drag_guess()
+            peaks_guessed = self._drag_guess()
         elif self.method == "click":
             # run click guess and return guess
-            peaks_guessed = self.click_guess()
+            peaks_guessed = self._click_guess()
         return peaks_guessed
     
-    def drag_guess(self, x_scale=200, y_scale=30):
+    def _drag_guess(self, x_scale=200, y_scale=30):
         
         x_peaks = []
         y_peaks = []
@@ -57,7 +50,7 @@ class Guessor(object):
         rs = []
         is_released = False
         
-        def button_pressed_motion(event):
+        def _button_pressed_motion(event):
             is_click_off = False
             global count
             global band
@@ -115,7 +108,7 @@ class Guessor(object):
             plt.draw()
             
         # 四角形を描く関数
-        def DrawRect(x1,x2,y1,y2):
+        def _DrawRect(x1,x2,y1,y2):
             global rs,rold, draw_count
             global sx1, sx2, sy1, sy2
             try:
@@ -149,7 +142,7 @@ class Guessor(object):
             #     lns.append(ln)
             #     plt.show()
             
-        def mouse_dragged_motion(event):
+        def _mouse_dragged_motion(event):
             plt.title("Right click to verify if this select is fine or select the peak again!")
             global x1,y1,x2,y2,DragFlag,r
 
@@ -168,10 +161,9 @@ class Guessor(object):
             # x1, x2 = sorted([x1,x2])
             # y1, y2 = sorted([y1,y2])
 
-            # 四角形を更新
-            DrawRect(x1,x2,y1,y2)
+            # update the area you selected by mouse dragging
+            _DrawRect(x1,x2,y1,y2)
 
-            # 描画
             plt.draw()
             if 1 < len(rs):
                 for i in range(len(rs)):
@@ -181,11 +173,9 @@ class Guessor(object):
                     except:
                         pass
             
-        # 離した時
-        def Release(event):
+        def _release(event):
             global DragFlag
             global is_released
-            # フラグをたおす
             DragFlag = False
             is_released = True
             
@@ -193,9 +183,9 @@ class Guessor(object):
         fig = plt.figure()
         ax = fig.add_subplot()
         plt.title("Please wrap the peak by mouse dragging! :)")
-        plt.connect('button_press_event', button_pressed_motion)
-        plt.connect("button_release_event", Release)
-        plt.connect("motion_notify_event", mouse_dragged_motion)
+        plt.connect('button_press_event', _button_pressed_motion)
+        plt.connect("button_release_event", _release)
+        plt.connect("motion_notify_event", _mouse_dragged_motion)
         plt.scatter(self.data.x, self.data.y, s=2)
         plt.show()
         
@@ -208,14 +198,10 @@ class Guessor(object):
                 print(e)
                 pass
         
-        # guess_content = []
-        # for i in peaks_guessed:
-        #     guess_content.extend(i)
-        # guess_content.append(self.background)
         peaks_guessed.append(self.background)
         return peaks_guessed
     
-    def click_guess(self, x_scale=200, y_scale=30):
+    def _click_guess(self, x_scale=200, y_scale=30):
         
         x_peaks = []
         y_peaks = []
@@ -230,7 +216,7 @@ class Guessor(object):
         peak_count = 0
         texts = []
         
-        def button_pressed_motion(event):
+        def _button_pressed_motion(event):
             is_click_off = False
             global count
             global band
@@ -280,7 +266,7 @@ class Guessor(object):
         fig = plt.figure()
         ax = fig.add_subplot()
         plt.title("Please click the top of the peak! :)")
-        plt.connect('button_press_event', button_pressed_motion)
+        plt.connect('button_press_event', _button_pressed_motion)
         plt.scatter(self.data.x, self.data.y, s=2)
         plt.show()
         
@@ -294,17 +280,11 @@ class Guessor(object):
         # add background info into init guess
         peaks_guessed.append(self.background)
         return peaks_guessed
-        # guess_total = []
-        # for i in guess:
-        #     guess_total.extend(i)
-        # guess_total.append(self.background)
 
 if __name__ == "__main__":
     
-    base_url = "../sample_data/"
-    endpoint = "sample.csv"
-    
-    data= read_data(base_url + endpoint, 0, ',')
+    sample_data = "../sample_data/sample.csv"
+    data= read_data(sample_data, 0, ',')
     guessor = Guessor(data, "drag", background=10)
     guess = guessor.guess()
     print(guess)

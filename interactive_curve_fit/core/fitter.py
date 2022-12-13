@@ -1,5 +1,3 @@
-import csv
-
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
@@ -7,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
 
-class Fitter(object):
+class Fitter():
     """
     ## init params
     - data: spectrum data
@@ -27,12 +25,12 @@ class Fitter(object):
     def run(self, method='gaussian', ci:int=2, deg: int = None):
         if method == 'gaussian':
             self.method = 'gaussian'
-            self.fit_by_gaussian_func()
+            self._fit_by_gaussian_func()
 
         elif method == 'polynomial':
             self.method = 'polynomial'
             self.deg = deg
-            self.fit_by_polynomial_func()
+            self._fit_by_polynomial_func()
             
         peakx = self.peakxs
         peaky = self.peakys
@@ -52,7 +50,7 @@ class Fitter(object):
     - Use the fititng functions imported from fitting_functions.py module 
     
     """
-    def fit_by_gaussian_func(self):
+    def _fit_by_gaussian_func(self):
         
         def exp_func(x=self.data.x, *params_guess):
             params = params_guess
@@ -91,7 +89,7 @@ class Fitter(object):
         self.pcov = pcov
         return popt, pcov
     
-    def fit_by_polynomial_func(self):
+    def _fit_by_polynomial_func(self):
         
         guess_list = []
         for content in self.guess[:-1]:
@@ -229,12 +227,21 @@ class Fitter(object):
     def out_result(self, ci:int=2):
         return self.peaks
     
-    def bandwidth_list(self, ci):
+    def bandwidth_list(self, ci:int=2):
         self.ci = ci
         popt = self.popt
         width_list = [popt[i] for i in range(len(popt)) if i % 3 ==2]
         width_list = [width_list[i]/(2**0.5) * 2*ci for i in range(len(width_list))]
         return width_list
     
-    def save_data(self, dir_path:str=None, save_path:str=None):
+    def save_data(self, save_path:str, sep:str=",") -> None:
+        """save_data
+
+        Parameters
+        ----------
+        save_path : str
+            path to the file in which Fitter stores the curve fitting results
+        sep : str
+            separater which is used in the output csv file, by default ","
+        """
         self.peaks.to_csv(save_path, sep=',')

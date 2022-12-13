@@ -3,7 +3,7 @@ import csv
 import matplotlib.pyplot as plt
 import numpy as np
 
-from core.preprocessing import read_data, reset_range
+from ..core.preprocessor import read_data, reset_range
 
 def draw_test(file_path, mode):
     
