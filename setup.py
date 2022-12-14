@@ -24,7 +24,7 @@ INSTALL_REQUIRES = [
 ]
 
 PACKAGES = [
-    'interactive_curve_fit'
+    'interactive_curve_fit', 'interactive_curve_fit/core', 'interactive_curve_fit/utils'
 ]
 
 CLASSIFIERS = [
