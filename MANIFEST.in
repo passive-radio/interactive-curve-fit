@@ -1,0 +1,15 @@
+include \
+    LICENSE \
+    README.md \
+    MANIFEST.in \
+    setup.* \
+    requirements.* \
+    tutorial.py \
+    *csv \
+
+graft sample_data
+graft img
+
+exclude \
+    .venv* \
+    .git \

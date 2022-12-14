@@ -2,7 +2,13 @@
 A Python project enables you to do curve fitting on spectrum data interactively on GUI.
 You can visualize your spectrum and fit the optional number of peaks on GUI using Scipy.optimize.curve_fit method.
 
-## <b>How to use?</b>
+## <b>How to install</b>
+
+```bash
+pip install interactive-curve-fit==0.0.1
+```
+
+## <b>How to use</b>
 
 Try [tutorial.py](tutorial.py) with your spectrum data!
 
