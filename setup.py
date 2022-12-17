@@ -11,7 +11,7 @@ AUTHOR_EMAIL = 'yudaiokubo@gmail.com'
 URL = 'https://github.com/passive-radio/interactive-curve-fit'
 LICENSE = 'MIT'
 DOWNLOAD_URL = 'https://github.com/passive-radio/interactive-curve-fit'
-VERSION = '0.0.9.2'
+VERSION = '0.0.9.3'
 PYTHON_REQUIRES = '>=3.6'
 KEYWORDS = 'curve fit spectrum'
 

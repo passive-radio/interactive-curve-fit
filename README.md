@@ -1,5 +1,4 @@
-# <b>interactive_curve_fit</b>
-A Python project enables you to do curve fitting on spectrum data interactively on GUI.
+
 You can visualize your spectrum and fit the optional number of peaks on GUI using Scipy.optimize.curve_fit method.
 
 ## <b>How to install</b>
@@ -14,15 +13,17 @@ Try [tutorial.py](tutorial.py) with your spectrum data!
 
 ## <b>Spectrum data format must be like the table below</b>
 
-| x | y |
-|---|---|
-|0  | 1  |
-|1  | 13 |
-|2  | 30 |
-|3  | 43 |
-|4  | 31 |
-|5  | 11 |
-|...|...|
+```csv
+some header rows,,,...
+x,y1,y2,y3
+0,0,2,3
+1,1,1,2
+2,3,2,3
+3,1,2,3
+4,0,3,4
+5,0,2,1
+some footer rows,,,...
+```
 
 ## <b>Steps to curve-fit</b>
 
@@ -31,7 +32,7 @@ Try [tutorial.py](tutorial.py) with your spectrum data!
     ```python
     from interactive_curve_fit import read_data, Guessor, Fitter
     
-    data = read_data(data, headers=2, sep=',')
+    data = read_data('out/spectrum.csv', headers=2, sep=',')
     guessor = Guessor(data, background=10, method='drag')
     guess = guessor.guess()
     ```
